@@ -5,7 +5,6 @@ import * as path from 'path';
 
 import electron, {
   app,
-  crashReporter,
   dialog,
   globalShortcut,
   systemPreferences,
@@ -59,11 +58,15 @@ if (appArgs.portable) {
 }
 
 if (!appArgs.userAgentHonest) {
-  app.userAgentFallback = removeUserAgentSpecifics(
-    app.userAgentFallback,
-    app.getName(),
-    app.getVersion(),
-  );
+  if (appArgs.userAgent) {
+    app.userAgentFallback = appArgs.userAgent;
+  } else {
+    app.userAgentFallback = removeUserAgentSpecifics(
+      app.userAgentFallback,
+      app.getName(),
+      app.getVersion(),
+    );
+  }
 }
 
 // Take in a URL on the command line as an override
@@ -222,14 +225,6 @@ app.on('quit', (event, exitCode) => {
 
 app.on('will-finish-launching', () => {
   log.debug('app.will-finish-launching');
-  if (appArgs.crashReporter) {
-    crashReporter.start({
-      companyName: appArgs.companyName ?? '',
-      productName: appArgs.name,
-      submitURL: appArgs.crashReporter,
-      uploadToServer: true,
-    });
-  }
 });
 
 if (appArgs.widevine) {
