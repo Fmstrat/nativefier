@@ -45,7 +45,8 @@ export function initArgs(argv: string[]): yargs.Argv<RawOptions> {
       type: 'string',
     })
     .positional('outputDirectory', {
-      defaultDescription: 'current directory',
+      defaultDescription:
+        'defaults to the current directory, or env. var. NATIVEFIER_APPS_DIR if set',
       description: 'the directory to generate the app in',
       normalize: true,
       type: 'string',
@@ -506,8 +507,13 @@ export function initArgs(argv: string[]): yargs.Argv<RawOptions> {
       description: 'enable verbose/debug/troubleshooting logs',
       type: 'boolean',
     })
+    .option('quiet', {
+      default: false,
+      description: 'suppress all logging',
+      type: 'boolean',
+    })
     .group(
-      ['crash-reporter', 'verbose'],
+      ['crash-reporter', 'verbose', 'quiet'],
       decorateYargOptionGroup('Debug Options'),
     )
     .version()
@@ -654,11 +660,17 @@ if (require.main === module) {
       'Running in verbose mode! This will produce a mountain of logs and',
       'is recommended only for troubleshooting or if you like Shakespeare.',
     );
+  } else if (options.quiet) {
+    log.setLevel('silent');
   } else {
     log.setLevel('info');
   }
 
   checkInternet();
+
+  if (!options.out && process.env.NATIVEFIER_APPS_DIR) {
+    options.out = process.env.NATIVEFIER_APPS_DIR;
+  }
 
   buildNativefierApp(options).catch((error) => {
     log.error('Error during build. Run with --verbose for details.', error);

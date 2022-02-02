@@ -1,3 +1,26 @@
+
+46.0.4 / 2022-01-06
+===================
+
+  * CI: (Attempt to) push tag, not unreadable SHA
+
+46.0.3 / 2022-01-06
+===================
+
+  * CI: Push Docker image to our org, not my personal account
+
+46.0.2 / 2022-01-06
+===================
+
+  * CI: Fix Docker Hub image build & push (PR #1100, thx @snpranav)
+
+46.0.1 / 2022-01-06
+===================
+
+  * Fix `--widevine` broken since 46.0.0 (thx @loxK)
+  * Bump default Electron from 16.0.5 to 16.0.6
+    - https://github.com/electron/electron/releases/tag/v16.0.6
+
 46.0.0 / 2022-01-02
 ===================
 
