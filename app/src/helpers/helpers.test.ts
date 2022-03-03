@@ -2,56 +2,114 @@ import {
   linkIsInternal,
   getCounterValue,
   removeUserAgentSpecifics,
+  cleanupPlainText,
 } from './helpers';
 
 const internalUrl = 'https://medium.com/';
 const internalUrlWww = 'https://www.medium.com/';
+const internalUrlSubPathRegex = /https:\/\/www.medium.com\/.*/;
 const sameBaseDomainUrl = 'https://app.medium.com/';
 const internalUrlCoUk = 'https://medium.co.uk/';
 const differentBaseDomainUrlCoUk = 'https://other.domain.co.uk/';
 const sameBaseDomainUrlCoUk = 'https://app.medium.co.uk/';
 const sameBaseDomainUrlTidalListen = 'https://listen.tidal.com/';
 const sameBaseDomainUrlTidalLogin = 'https://login.tidal.com/';
+const sameBaseDomainUrlTidalRegex = /https:\/\/(login|listen).tidal.com\/.*/;
 const internalUrlSubPath = 'topic/technology';
 const externalUrl = 'https://www.wikipedia.org/wiki/Electron';
 const wildcardRegex = /.*/;
 
-test('the original url should be internal', () => {
-  expect(linkIsInternal(internalUrl, internalUrl, undefined)).toEqual(true);
-});
-
-test('sub-paths of the original url should be internal', () => {
+test('the original url should be internal without --strict-internal-urls', () => {
   expect(
-    linkIsInternal(internalUrl, internalUrl + internalUrlSubPath, undefined),
+    linkIsInternal(internalUrl, internalUrl, undefined, undefined),
   ).toEqual(true);
 });
 
-test("'about:blank' should be internal", () => {
-  expect(linkIsInternal(internalUrl, 'about:blank', undefined)).toEqual(true);
+test('the original url should be internal with --strict-internal-urls off', () => {
+  expect(linkIsInternal(internalUrl, internalUrl, undefined, false)).toEqual(
+    true,
+  );
+});
+
+test('the original url should be internal with --strict-internal-urls on', () => {
+  expect(linkIsInternal(internalUrl, internalUrl, undefined, true)).toEqual(
+    true,
+  );
+});
+
+test('sub-paths of the original url should be internal with --strict-internal-urls off', () => {
+  expect(
+    linkIsInternal(
+      internalUrl,
+      internalUrl + internalUrlSubPath,
+      undefined,
+      false,
+    ),
+  ).toEqual(true);
+});
+
+test('sub-paths of the original url should not be internal with --strict-internal-urls on', () => {
+  expect(
+    linkIsInternal(
+      internalUrl,
+      internalUrl + internalUrlSubPath,
+      undefined,
+      true,
+    ),
+  ).toEqual(false);
+});
+
+test('sub-paths of the original url should be internal with using a regex and --strict-internal-urls on', () => {
+  expect(
+    linkIsInternal(
+      internalUrl,
+      internalUrl + internalUrlSubPath,
+      internalUrlSubPathRegex,
+      true,
+    ),
+  ).toEqual(false);
+});
+
+test("'about:blank' should always be internal", () => {
+  expect(linkIsInternal(internalUrl, 'about:blank', undefined, true)).toEqual(
+    true,
+  );
 });
 
 test('urls from different sites should not be internal', () => {
-  expect(linkIsInternal(internalUrl, externalUrl, undefined)).toEqual(false);
+  expect(linkIsInternal(internalUrl, externalUrl, undefined, false)).toEqual(
+    false,
+  );
 });
 
 test('all urls should be internal with wildcard regex', () => {
-  expect(linkIsInternal(internalUrl, externalUrl, wildcardRegex)).toEqual(true);
+  expect(linkIsInternal(internalUrl, externalUrl, wildcardRegex, true)).toEqual(
+    true,
+  );
 });
 
 test('a "www." of a domain should be considered internal', () => {
-  expect(linkIsInternal(internalUrl, internalUrlWww, undefined)).toEqual(true);
+  expect(linkIsInternal(internalUrl, internalUrlWww, undefined, false)).toEqual(
+    true,
+  );
 });
 
 test('urls on the same "base domain" should be considered internal', () => {
-  expect(linkIsInternal(internalUrl, sameBaseDomainUrl, undefined)).toEqual(
-    true,
-  );
+  expect(
+    linkIsInternal(internalUrl, sameBaseDomainUrl, undefined, false),
+  ).toEqual(true);
+});
+
+test('urls on the same "base domain" should NOT be considered internal using --strict-internal-urls', () => {
+  expect(
+    linkIsInternal(internalUrl, sameBaseDomainUrl, undefined, true),
+  ).toEqual(false);
 });
 
 test('urls on the same "base domain" should be considered internal, even with a www', () => {
-  expect(linkIsInternal(internalUrlWww, sameBaseDomainUrl, undefined)).toEqual(
-    true,
-  );
+  expect(
+    linkIsInternal(internalUrlWww, sameBaseDomainUrl, undefined, false),
+  ).toEqual(true);
 });
 
 test('urls on the same "base domain" should be considered internal, even with different sub domains', () => {
@@ -60,19 +118,47 @@ test('urls on the same "base domain" should be considered internal, even with di
       sameBaseDomainUrlTidalListen,
       sameBaseDomainUrlTidalLogin,
       undefined,
+      false,
     ),
   ).toEqual(true);
 });
 
+test('urls should support sub domain matching with a regex', () => {
+  expect(
+    linkIsInternal(
+      sameBaseDomainUrlTidalListen,
+      sameBaseDomainUrlTidalLogin,
+      sameBaseDomainUrlTidalRegex,
+      false,
+    ),
+  ).toEqual(true);
+});
+
+test('urls on the same "base domain" should NOT be considered internal with different sub domains when using --strict-internal-urls', () => {
+  expect(
+    linkIsInternal(
+      sameBaseDomainUrlTidalListen,
+      sameBaseDomainUrlTidalLogin,
+      undefined,
+      true,
+    ),
+  ).toEqual(false);
+});
+
 test('urls on the same "base domain" should be considered internal, long SLD', () => {
   expect(
-    linkIsInternal(internalUrlCoUk, sameBaseDomainUrlCoUk, undefined),
+    linkIsInternal(internalUrlCoUk, sameBaseDomainUrlCoUk, undefined, false),
   ).toEqual(true);
 });
 
 test('urls on the a different "base domain" are considered NOT internal, long SLD', () => {
   expect(
-    linkIsInternal(internalUrlCoUk, differentBaseDomainUrlCoUk, undefined),
+    linkIsInternal(
+      internalUrlCoUk,
+      differentBaseDomainUrlCoUk,
+      undefined,
+      false,
+    ),
   ).toEqual(false);
 });
 
@@ -119,7 +205,9 @@ const testLoginPages = [
 test.each(testLoginPages)(
   '%s login page should be internal',
   (loginUrl: string) => {
-    expect(linkIsInternal(internalUrl, loginUrl, undefined)).toEqual(true);
+    expect(linkIsInternal(internalUrl, loginUrl, undefined, false)).toEqual(
+      true,
+    );
   },
 );
 
@@ -139,7 +227,7 @@ const testNonLoginPages = [
 test.each(testNonLoginPages)(
   '%s page should not be internal',
   (url: string) => {
-    expect(linkIsInternal(internalUrl, url, undefined)).toEqual(false);
+    expect(linkIsInternal(internalUrl, url, undefined, false)).toEqual(false);
   },
 );
 
@@ -172,5 +260,11 @@ describe('removeUserAgentSpecifics', () => {
     ).not.toBe(
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36',
     );
+  });
+});
+
+describe('cleanupPlainText', () => {
+  test('removes extra spaces from text', () => {
+    expect(cleanupPlainText('  this is a  test  ')).toBe('this is a test');
   });
 });

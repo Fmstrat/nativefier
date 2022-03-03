@@ -116,6 +116,7 @@ export function linkIsInternal(
   currentUrl: string,
   newUrl: string,
   internalUrlRegex: string | RegExp | undefined,
+  isStrictInternalUrlsEnabled: boolean | undefined,
 ): boolean {
   log.debug('linkIsInternal', { currentUrl, newUrl, internalUrlRegex });
   if (newUrl.split('#')[0] === 'about:blank') {
@@ -131,6 +132,10 @@ export function linkIsInternal(
     if (regex.test(newUrl)) {
       return true;
     }
+  }
+
+  if (isStrictInternalUrlsEnabled) {
+    return currentUrl == newUrl;
   }
 
   try {
@@ -179,4 +184,9 @@ export function removeUserAgentSpecifics(
   return userAgentFallback
     .replace(`Electron/${process.versions.electron} `, '')
     .replace(`${appName}/${appVersion} `, ' ');
+}
+
+/** Removes extra spaces from a text */
+export function cleanupPlainText(text: string): string {
+  return text.trim().replace(/\s+/g, ' ');
 }

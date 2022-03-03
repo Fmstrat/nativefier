@@ -1,4 +1,29 @@
 
+46.1.1 / 2022-02-14
+===================
+
+  * Feature: Add "copy as plain text" in edit menu (PR #1351 @abhi12299, fix #1144)
+  * Bump default Electron to 16.0.9 (from 16.0.8), with security fixes
+    - https://github.com/electron/electron/releases/tag/v16.0.9
+  * Upgrade dependencies
+
+46.1.0 / 2022-02-06
+===================
+
+  * Add flag `--strict-internal-urls` to disable domain and subpath matching (PR #1340 @hbridge)
+  * Add flag `--quiet` flag to suppress all log output (PR #1342 @Nickersoft)
+  * Fix flag `--file-download-options` (PR #1350 @abhi12299, #1275)
+  * Allow setting default app destination with env. var. `NATIVEFIER_APPS_DIR` (PR #1339 @mattruzzi, #1336)
+  * Bump default Electron to 16.0.8, from 16.0.6
+    - https://github.com/electron/electron/releases/tag/v16.0.7
+    - https://github.com/electron/electron/releases/tag/v16.0.8
+  * Upgrade dependencies
+  * Docs:
+    - CATALOG.md: Document GCal needs lying about useragent for working notifications (fix #1292)
+    - API.md: Fix broken "insecurity options" link (PR #1345 @ZacharyTalis)
+    - README.md: mention Snap & AUR repos
+    - HACKING.md: add triage guidelines
+
 46.0.4 / 2022-01-06
 ===================
 

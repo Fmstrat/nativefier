@@ -7,6 +7,7 @@ import yargs from 'yargs';
 
 import { DEFAULT_ELECTRON_VERSION } from './constants';
 import {
+  camelCased,
   checkInternet,
   getProcessEnvs,
   isArgFormatInvalid,
@@ -346,9 +347,13 @@ export function initArgs(argv: string[]): yargs.Argv<RawOptions> {
     })
     .option('internal-urls', {
       defaultDescription: 'URLs sharing the same base domain',
-      description:
-        'regex of URLs to consider "internal"; all other URLs will be opened in an external browser',
+      description: `regex of URLs to consider "internal"; by default matches based on domain (see '--strict-internal-urls'); all other URLs will be opened in an external browser`,
       type: 'string',
+    })
+    .option('strict-internal-urls', {
+      default: false,
+      description: 'disable domain-based matching on internal URLs',
+      type: 'boolean',
     })
     .option('proxy-rules', {
       description:
@@ -356,7 +361,12 @@ export function initArgs(argv: string[]): yargs.Argv<RawOptions> {
       type: 'string',
     })
     .group(
-      ['block-external-urls', 'internal-urls', 'proxy-rules'],
+      [
+        'block-external-urls',
+        'internal-urls',
+        'strict-internal-urls',
+        'proxy-rules',
+      ],
       decorateYargOptionGroup('URL Handling Options'),
     )
     // Auth Options
@@ -582,6 +592,10 @@ export function parseArgs(args: yargs.Argv<RawOptions>): RawOptions {
   ]) {
     if (parsed[arg] && typeof parsed[arg] === 'string') {
       parsed[arg] = parseJson(parsed[arg] as string);
+      // sets fileDownloadOptions and browserWindowOptions
+      // as parsed object as they were still strings in `nativefier.json`
+      // because only their snake-cased variants were being parsed above
+      parsed[camelCased(arg)] = parsed[arg];
     }
   }
   if (parsed['process-envs'] && typeof parsed['process-envs'] === 'string') {

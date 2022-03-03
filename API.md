@@ -58,6 +58,7 @@
     - [[block-external-urls]](#block-external-urls)
     - [[internal-urls]](#internal-urls)
       - [[internal-login-pages]](#internal-login-pages)
+    - [[strict-internal-urls]](#strict-internal-urls)
     - [[proxy-rules]](#proxy-rules)
   - [Auth Options](#auth-options)
     - [[basic-auth-username] and [basic-auth-password]](#basic-auth-username-and-basic-auth-password)
@@ -167,7 +168,7 @@ Note: careful to not conflate _platform_ with _architecture_. If you want for ex
 -c, --conceal
 ```
 
-Specifies if the source code within the nativefied app should be packaged into an archive, defaults to false, [read more](http://electron.atom.io/docs/v0.36.0/tutorial/application-packaging/).
+Specifies if the source code within the nativefied app should be packaged into an archive, defaults to false, [read more](https://www.electronjs.org/docs/latest/glossary#asar).
 
 #### [electron-version]
 
@@ -768,7 +769,7 @@ Example of `--internal-urls` causing all links to Google to be considered intern
 nativefier https://google.com --internal-urls ".*?\.google\.*?"
 ```
 
-Or, if you never expect Nativefier to open an "external" page in your OS browser,
+To turn off base domain matching, use [`--strict-internal-urls`](#strict-internal-urls).  Or, if you never expect Nativefier to open an "external" page in your OS browser,
 
 ```bash
 nativefier https://google.com --internal-urls ".*?"
@@ -799,6 +800,15 @@ Note: While .com is specified, for most of these we try to match even on non-US
 based domains such as `.co.uk` as well
 
 If you think this list is missing a login page that you think should be internal, feel free to submit an [issue](https://github.com/nativefier/nativefier/issues/new?assignees=&labels=bug&template=bug_report.md&title=[New%20internal%20login%20page%20request]%20Your%20login%20page%20here) or even better a pull request!
+
+#### [strict-internal-urls]
+
+```
+--strict-internal-urls
+```
+
+Disables base domain matching when determining if a link is internal.  Only the `--internal-urls` regex and login pages will be matched against, so `app.foo.com` will be external to `www.foo.com` unless it matches the `--internal-urls` regex.
+
 
 #### [proxy-rules]
 
